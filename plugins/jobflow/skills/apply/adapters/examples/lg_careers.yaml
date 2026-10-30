@@ -1,0 +1,80 @@
+# verified: 2026-09 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# LG Careers (careers.lg.com) 어댑터
+# 실측 2026-09 · 계열사 신입 공고 지원서로 검증
+ats: lg_careers
+status: verified
+domains:
+  - careers.lg.com
+  - api.careers.lg.com
+
+login:
+  required: true
+  methods: [이메일/비밀번호, 카카오, 구글]
+  note: >
+    세션은 브라우저 프로파일에 남는다(별도 창 서버 기준). 헤더의 '로그인' 버튼은 로그인 후에도 그대로 보이므로
+    로그인 판별에 쓰면 안 된다. main 영역에 지원서 폼이 렌더링됐는지로 판별한다.
+
+save:
+  supported: true
+  endpoint: POST https://api.careers.lg.com/rmk/aplc/saveApplicantFormDetailInfo
+  verify: 응답 200 확인 + 새로고침 후 값 잔존 확인. 둘 다 해야 한다
+  timeout: 30분 미사용 시 자동 로그아웃
+
+steps: [기본사항, 상세인적사항, 자기소개서, 제출검토]
+
+field_hints:
+  # 기본사항
+  desireJobs.N.orgCode: 지망 조직 (정적 select)
+  desireJobs.N.jobCode: 지망 직무 (정적 select, orgCode 연동)
+  desireJobs.N.locationCode: 근무지 (정적 select, jobCode 연동)
+  savePersonalInfos.nationality: 국적 - 검색형이라 사람이 골라야 함
+  # 학력
+  uniInfoList.0.totalPoint: 전체 이수학점
+  uniInfoList.0.gpaPoint / gpaPointCode: 전체 평점 / 만점기준(GPA45 등)
+  uniInfoList.0.majorPoint / majorGpa / majorGpaCode: 전공 이수학점 / 전공 평점 / 만점기준
+  uniInfoList.0.minorType: 부전공 / 복수전공(B)
+  uniInfoList.0.minorName: 복수전공명 (검색형)
+  uniInfoList.0.doublePoint / doubleMajorGpa: 부·복수전공 이수학점 / 평점
+  # 반복 리스트 (모두 '추가' 버튼으로 행 생성)
+  rmkLanguageTestInfoList.N: languageCode, pointGradeValue + 시험명(검색형), 취득일
+  rmkGlobalCompetencesInfoList.N: languageType, useCountryName, languageLevel
+  rmkQualificationsInfoList.N: qualificationName(검색형), qualGradeName, certInstitutionName, 취득일
+  rmkNewcomerExperiencesInfoList.N: companyName(검색형), orgName, gradeName, expContent(500자), 기간 + 재직중 체크
+  rmkInoutActivitiesInfoList.N: groupName, awardDetails, actContent(500자), 기간
+  rmkMajorclassProjectInfoList.N: majorclassName, topic, pjtContent(500자), 기간
+  rmkAgreementInfoList.N.agreeYn: 동의서 3종
+
+gotchas:
+  - id: blur_required
+    what: >
+      input/change 이벤트만 쏘면 일부 필드가 임시저장 때 조용히 사라진다.
+      실측으로 rmkQualificationsInfoList 의 qualGradeName·certInstitutionName 이 두 번 연속 소실됐다.
+      화면에는 값이 보이는데 저장 후 빈칸이 되므로 눈으로만 보면 놓친다.
+    fix: focus -> native value setter -> input -> change -> blur -> focusout -> el.blur() 순서로 발생시킨다
+
+  - id: datepicker_month_mode
+    what: >
+      react-datepicker 를 쓴다. input 이 readonly 라 타이핑이 안 되고,
+      native el.click() 으로는 달력이 열리지 않는다.
+    fix: >
+      ① input 에 pointerdown/mousedown/pointerup/mouseup/click 을 MouseEvent 로 연속 발생 -> 일 단위 달력
+      ② .react-datepicker__current-month 클릭 -> 월 선택 모드(셀 12개).
+         전환 실패가 잦으니 셀이 12개인지 검증하고 최대 3회 재시도한다
+      ③ .react-datepicker__navigation--previous/next 로 년 이동 (월 모드에서는 년 단위로 움직인다)
+      ④ .react-datepicker__month-text 에서 'N월' 클릭
+      저장값은 YYYY.MM.01 형태로 일자가 붙는다
+
+  - id: range_overwrite
+    what: 같은 행의 종료일을 고르면 시작일이 종료일 값으로 덮어써지는 경우가 있다 (실측 - 경력 시작일이 종료일 값으로 바뀜)
+    fix: 종료일 설정 후 반드시 시작일을 다시 읽어 검증하고, 틀어졌으면 시작일을 나중에 재설정한다
+
+  - id: popup_blocks_button
+    what: 달력이 열린 채로 두면 임시저장 버튼 클릭이 pointer-events 로 가로막힌다
+    fix: 저장 전에 Escape + body mousedown 으로 팝업을 닫는다
+
+  - id: sticky_header_intercept
+    what: Playwright 클릭 시 sticky 헤더가 요소를 가려 타임아웃이 난다
+    fix: scrollIntoView 후 window.scrollTo 로 260px 여유를 주거나, MouseEvent 를 직접 발생시킨다
+
+seen_in:
+  - LG 계열사 다수 (같은 플랫폼으로 보이는 곳은 미검증)

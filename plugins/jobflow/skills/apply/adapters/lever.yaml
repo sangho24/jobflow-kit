@@ -1,0 +1,67 @@
+# verified: 2026-09 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# Lever (jobs.lever.co) - 외국계 / 테크
+# 확인 사례: 외국계 기업 서울 오피스 신입 공고
+# status: verified - 2026-08 신입 공고 폼 실측(57필드)
+id: lever
+status: verified
+verified_from: "외국계 신입 공고 1건"
+verified_at: "2026-08"
+
+match:
+  - "jobs.lever.co/*"
+
+auth:
+  type: none                 # ✅ 계정 불필요. 로그인 없이 바로 지원 폼.
+  mfa: null
+  captcha:
+    type: invisible
+    on: submit
+    blocks_fill: false       # 채우는 데는 지장 없다. 제출 시에만 작동.
+
+# 🚨 이 ATS 최대 제약
+save_draft:
+  supported: false
+  note: |
+    버튼이 'SUBMIT APPLICATION' 하나뿐이다. 임시저장/저장 기능이 없다.
+    전략은 SKILL.md 0단계를 따른다: 기본은 기입안만 노션에 보고하고,
+    사용자가 원하면 채워 두고 사용자가 직접 제출한다. 페이지를 벗어나면 입력값이 전부 날아간다.
+
+url_shape:
+  job:   "jobs.lever.co/{org}/{posting_id}"
+  apply: "jobs.lever.co/{org}/{posting_id}/apply"
+  list:  "jobs.lever.co/{org}?location={loc}"
+
+# 표준 필드 (모든 Lever 폼 공통)
+core_fields:
+  - { key: resume,   name: "resume",           label: "Resume/CV",        type: file,  required: true }
+  - { key: name,     name: "name",             label: "Full name",        maps_to: personal.name_en }
+  - { key: email,    name: "email",            label: "Email",            maps_to: personal.email }
+  - { key: phone,    name: "phone",            label: "Phone",            maps_to: personal.phone_intl }
+  - { key: location, name: "location",         label: "Current location", maps_to: personal.address.en }
+  - { key: org,      name: "org",              label: "Current company",  maps_to: "experience[0].company" }
+  - { key: linkedin, name: "urls[LinkedIn]",   label: "LinkedIn URL",     maps_to: links.linkedin }
+  - { key: github,   name: "urls[GitHub]",     label: "GitHub URL",       maps_to: links.github }
+  - { key: portfolio,name: "urls[Portfolio]",  label: "Portfolio URL",    maps_to: links.portfolio }
+  - { key: comments, name: "comments",         label: "Cover letter",     type: textarea, required: false }
+
+# 공고별 커스텀 질문은 cards[<uuid>][fieldN] 형태다.
+# uuid 는 공고마다 다르므로 하드코딩 금지 - 질문 텍스트(.application-question 내 라벨)로 매칭할 것.
+custom_field_shape: "cards[{card_uuid}][field{n}]"
+
+extraction_snippet: |
+  // 질문 텍스트 + input name 페어를 뽑는다
+  () => [...document.querySelectorAll('.application-question')].map(c => ({
+    q: c.querySelector('.application-label')?.innerText.trim(),
+    name: c.querySelector('input,select,textarea')?.name
+  }))
+
+known_traps:
+  - id: university_select
+    desc: "대학 드롭다운이 3000개 넘게 있지만 한국 대학은 일부만 등재돼 있다."
+    action: "'Other - School Not Listed' 선택"
+  - id: graduation_select
+    desc: "졸업 시기 질문의 선택지가 몇 개 학기와 Other 뿐인 폼이 있다."
+    action: "공고 본문의 졸업연도 요건과 폼 선택지가 어긋나면 지원 전에 반드시 확인. 임의로 Other 를 고르지 말 것."
+  - id: essay_required
+    desc: "공고에 따라 필수 서술형 문항이 있다."
+    action: "경험 카드에서 소재만 제시. 문장은 사람이 쓴다."

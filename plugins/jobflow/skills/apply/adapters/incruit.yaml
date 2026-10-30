@@ -1,0 +1,47 @@
+# verified: 2026-09 기준 실측 1건 (신뢰도 낮음), 사이트 개편 시 달라질 수 있음
+# 인크루트 기반 ATS (<회사>.incruit.com/apply/ 형태) - 확인된 것만 적는다
+# 확인일: 2026-09 / 실측 1건 (금융권 계열 공채 공고, 마감 당일 작업 중 확인)
+id: incruit
+status: verified_partial     # 폼 전 구간이 아니라 함정 위주로만 확인
+verified_at: "2026-09"
+confidence: "실측 1건. 다른 회사 설정에서는 다를 수 있다"
+
+match:
+  - "*.incruit.com/apply/*"
+
+save:
+  draft: true                # 임시저장 있음
+  draft_button_text: 임시저장
+  note: |
+    버튼이 부르는 함수(ImsiSend)는 FinalSubmit 플래그만 비운다.
+    실제 전송은 type=submit 이 하므로, 함수만 호출하면 저장되지 않는다.
+    함수 호출 뒤 폼 submit 까지 해야 한다 (document.applyform.submit()).
+  submit_button: "최종 제출 계열 버튼 (🚫 누르지 않는다)"
+
+order:
+  # 팝업을 닫으면 본문 폼이 리로드되어 입력이 초기화된다. 순서가 중요하다
+  - 증명사진 업로드 팝업
+  - 첨부서류 팝업
+  - 나머지 본문 입력
+  - 즉시 임시저장
+
+widgets:
+  date: "jQuery datepicker, 형식 yy-mm-dd. 일자까지 필요하다. 월까지만 넣으면 저장 시 '등록하는 과정에서 에러가 발생하였습니다' 로 거부된다"
+  date_set: "$(el).datepicker('setDate', 'YYYY-MM-DD') 로 넣어야 내부 상태까지 맞는다"
+  select_alert: "select 를 바꿀 때마다 alert 가 떠서 자동입력이 끊긴다. window.alert = () => {} 로 잠시 무력화"
+
+known_traps:
+  - id: popup_resets_form
+    desc: "증명사진·첨부서류 팝업을 닫으면 본문 폼이 리로드되어 입력이 전부 초기화된다"
+    action: "사진 -> 첨부 -> 본문 입력 -> 즉시 임시저장 순서로 진행"
+  - id: date_needs_day
+    desc: "날짜 칸이 일자까지 요구한다 (yy-mm-dd). 연월만 넣으면 저장 거부"
+    action: "datepicker setDate 로 YYYY-MM-DD 입력"
+  - id: password_truncated
+    desc: "새 계정 비밀번호의 특수문자 일부가 서버에서 잘려 저장될 수 있다"
+    action: "발급 완료 화면에 표시된 값을 확인한다. 특수문자는 가급적 쓰지 않는다"
+  - id: imsi_function_only
+    desc: "임시저장 함수만 호출하면 서버로 전송되지 않는다"
+    action: "함수 호출 후 폼 submit 까지 수행하고, 새로고침 후 값 유지를 확인"
+
+seen_in: [금융권 계열 공채 1건]

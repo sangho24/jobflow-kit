@@ -1,0 +1,99 @@
+# verified: 2026-08 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# 필드 레지스트리 - "어떤 값을 입력해야 하는지" 의 누적 지식 (ATS 중립 계층)
+#
+#   maps_to 있음 + confidence high  -> 자동 입력
+#   confidence low / maps_to 없음   -> 노션 행 본문 "## 5. 결정 필요" 로 이관
+#   사람이 한 번 결정하면 여기 기록되어 다음부터 자동이 된다.
+#
+# maps_to 는 작업 폴더의 profile/master.yaml 키 경로다 (templates/master.example.yaml 참고).
+# 어학은 목록이다: languages[test=OPIc].level 처럼 시험명으로 항목을 고른다.
+# 개인 값은 담지 않는다. seen_in 에는 ATS 이름만 적는다.
+
+version: 2
+sources_surveyed:
+  - { ats: recruiter.co.kr, via: "제출 지원서 아카이브 PDF 역산", fields: 52 }
+
+entries:
+  # ── 기본정보 ────────────────────────────────────────────────
+  - { key: name_ko,   label_variants: ["이름", "성명", "한글성명", "한글 이름"], maps_to: personal.name_ko, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: name_en,   label_variants: ["영문이름", "영문성명", "English Name", "Full Name"], maps_to: personal.name_en, confidence: high, seen_in: [recruiter.co.kr],
+      note: "지원서와 이력서의 영문 이름 표기 순서(성-이름 / 이름-성)가 다르면 여권 표기를 확인해 통일한다" }
+  - { key: birth,     label_variants: ["생년월일", "생일", "Date of Birth"], maps_to: personal.birth, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: gender,    label_variants: ["성별", "Gender"], maps_to: personal.gender, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: email,     label_variants: ["이메일", "이메일주소", "E-mail", "Email Address"], maps_to: personal.email, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: phone,     label_variants: ["휴대전화", "휴대폰", "연락처", "Mobile", "Phone"], maps_to: personal.phone, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: nationality, label_variants: ["국적", "Nationality"], maps_to: personal.nationality, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: address,   label_variants: ["현주소", "주소", "거주지"], maps_to: personal.address.full, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: zipcode,   label_variants: ["우편번호"], maps_to: personal.address.zipcode, confidence: high, seen_in: [] }
+
+  # ── 병역 / 우대 ─────────────────────────────────────────────
+  - { key: military_status, label_variants: ["병역", "병역사항", "병역구분", "군필여부"], maps_to: military.status, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: military_rank,   label_variants: ["계급", "전역계급"], maps_to: military.rank, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: discharge_type,  label_variants: ["제대구분", "전역구분"], maps_to: military.discharge_type, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: service_period,  label_variants: ["복무기간", "군복무기간"], maps_to: "military.start~military.end", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: veteran,     label_variants: ["보훈여부", "보훈대상", "취업보호대상"], maps_to: special_status.veteran, confidence: high, seen_in: [recruiter.co.kr], values: [대상, 비대상] }
+  - { key: disability,  label_variants: ["장애여부", "장애인여부"], maps_to: special_status.disability, confidence: high, seen_in: [recruiter.co.kr], values: [대상, 비대상] }
+
+  # ── 학력 ────────────────────────────────────────────────────
+  - { key: university_name, label_variants: ["학교명", "대학교", "출신학교", "School", "University"], maps_to: "education.university[0].name", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: admission_type,  label_variants: ["입학구분"], maps_to: "education.university[0].admission_type", confidence: high, seen_in: [recruiter.co.kr], values: [입학, 편입] }
+  - { key: campus,          label_variants: ["본교분교", "본분교"], maps_to: "education.university[0].campus", confidence: high, seen_in: [recruiter.co.kr], values: [본교, 분교] }
+  - { key: school_location, label_variants: ["소재지", "학교소재지"], maps_to: "education.university[0].location", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: enroll_period,   label_variants: ["재학기간", "입학~졸업"], maps_to: "education.university[0].admitted~graduated", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: degree_status,   label_variants: ["학위", "졸업여부", "졸업구분"], maps_to: "education.university[0].status", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: major,           label_variants: ["주전공", "전공", "Major"], maps_to: "education.university[0].major", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: major_schedule,  label_variants: ["주야", "주야구분"], maps_to: "education.university[0].major_schedule", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: major_field,     label_variants: ["계열", "전공계열"], maps_to: "education.university[0].major_field", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: linked_major,    label_variants: ["연계전공", "복수전공", "이중전공", "부전공"], maps_to: "education.university[0].linked_major", confidence: high, seen_in: [recruiter.co.kr],
+      note: "ATS마다 '복수전공/연계전공/이중전공'을 다르게 부르고, 별도 학력 행으로 요구하기도 한다. 폼 구조 확인 필요" }
+  - { key: gpa_45,          label_variants: ["학점", "평점", "GPA", "학점(취득/기준)"], maps_to: "education.university[0].gpa", confidence: high, seen_in: [] }
+  - { key: gpa_100,         label_variants: ["학업성적", "100점 환산", "환산점수"], maps_to: "education.university[0].gpa_100", confidence: high, seen_in: [recruiter.co.kr],
+      note: "recruiter.co.kr은 100점 환산을 요구한다. 4.5 만점만 갖고 있으면 입력 불가" }
+  - { key: highschool_name, label_variants: ["고등학교", "출신고교", "고교명"], maps_to: education.high_school.name, confidence: high, seen_in: [],
+      note: "마스터 프로필에 값이 없으면 이 칸을 요구하는 폼에서 차단된다. 선택 사항인 곳이 많으니 공고 가이드를 먼저 확인" }
+
+  # ── 경력 ────────────────────────────────────────────────────
+  - { key: company,     label_variants: ["회사명", "직장명", "근무처", "Company"], maps_to: "experience[].company", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: department,  label_variants: ["부서", "소속부서", "Department"], maps_to: "experience[].department", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: position,    label_variants: ["직급", "직위", "Title", "Position"], maps_to: "experience[].position", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: duties,      label_variants: ["담당업무", "주요업무", "Responsibilities"], maps_to: "experience[].duties", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: emp_type,    label_variants: ["고용형태", "재직구분", "근무형태"], maps_to: "experience[].employment_type", confidence: medium, seen_in: [recruiter.co.kr] }
+  - { key: work_period, label_variants: ["재직기간", "근무기간"], maps_to: "experience[].start~end", confidence: high, seen_in: [recruiter.co.kr] }
+
+  # ── 어학 ────────────────────────────────────────────────────
+  - { key: lang_test,    label_variants: ["공인외국어시험", "어학시험", "시험명"], maps_to: "languages[test=OPIc].test", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: lang_cert_no, label_variants: ["등록번호", "성적표번호", "수험번호"], maps_to: "languages[test=OPIc].cert_no", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: lang_score,   label_variants: ["점수", "등급", "Score", "Grade"], maps_to: "languages[test=OPIc].level", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: lang_date,    label_variants: ["응시일", "취득일", "시험일"], maps_to: "languages[test=OPIc].date", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: toeic_score,          label_variants: ["TOEIC", "토익", "TOEIC 점수"], maps_to: "languages[test=TOEIC].score", confidence: high, seen_in: [], note: "값이 없으면 결정 필요로 보낸다" }
+  - { key: toeic_speaking_grade, label_variants: ["TOEIC Speaking", "토익스피킹", "TOEIC S"], maps_to: "languages[test=TOEIC Speaking].level", confidence: high, seen_in: [], note: "값이 없으면 결정 필요로 보낸다" }
+
+  # ── 자격증 / 프로그래밍 ─────────────────────────────────────
+  - { key: cert_name,     label_variants: ["자격증", "자격증명", "면허증"], maps_to: "certificates[].name", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: cert_issuer,   label_variants: ["발급기관", "주관기관", "시행처"], maps_to: "certificates[].issuer", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: cert_acquired, label_variants: ["취득일자", "취득일", "발급일"], maps_to: "certificates[].acquired", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: prog_lang,     label_variants: ["프로그램명", "프로그래밍 언어", "언어"], maps_to: "programming[].name", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: prog_level,    label_variants: ["활용수준", "숙련도", "수준"], maps_to: "programming[].level", confidence: high, seen_in: [recruiter.co.kr], values: [초급, 중급, 고급] }
+
+  # ── 경험 ────────────────────────────────────────────────────
+  - { key: award_name,   label_variants: ["상훈명", "수상명", "수상내역"], maps_to: "awards[].name", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: award_issuer, label_variants: ["수여기관", "주관기관"], maps_to: "awards[].issuer", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: award_date,   label_variants: ["수상일자", "수상일"], maps_to: "awards[].date", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: activity_type, label_variants: ["활동구분", "구분"], maps_to: "activities[].type", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: activity_org,  label_variants: ["기관 및 조직명", "기관명", "단체명"], maps_to: "activities[].org", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: activity_period, label_variants: ["활동기간"], maps_to: "activities[].period", confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: activity_role, label_variants: ["역할", "담당"], maps_to: "activities[].role", confidence: high, seen_in: [recruiter.co.kr] }
+
+  # ── 링크 ────────────────────────────────────────────────────
+  - { key: portfolio_url, label_variants: ["포트폴리오 URL", "포트폴리오", "Portfolio"], maps_to: links.portfolio, confidence: high, seen_in: [recruiter.co.kr] }
+  - { key: github,   label_variants: ["Github", "깃허브"], maps_to: links.github, confidence: high, seen_in: [] }
+  - { key: linkedin, label_variants: ["LinkedIn", "링크드인"], maps_to: links.linkedin, confidence: high, seen_in: [], note: "값이 없으면 결정 필요로 보낸다. 외국계 지원 시 자주 요구" }
+
+  # ── 공고별로 달라 자동화하지 않는 것 ────────────────────────
+  - { key: apply_field, label_variants: ["지원분야(택1)", "지원분야", "모집분야", "희망직무"], confidence: low, seen_in: [recruiter.co.kr],
+      note: "공고마다 선택지가 다름 → 항상 결정 필요 큐" }
+  - { key: desired_sub_field, label_variants: ["희망 세부 분야", "세부분야"], maps_to: preferences.desired_field, confidence: low, seen_in: [recruiter.co.kr] }
+  - { key: desired_location, label_variants: ["희망근무지", "근무희망지역", "Preferred Location"], maps_to: preferences.desired_location, confidence: low, seen_in: [] }
+  - { key: desired_salary,   label_variants: ["희망연봉", "희망 처우"], maps_to: preferences.desired_salary, confidence: low, seen_in: [] }
+  - { key: essay,       label_variants: ["자기소개서", "자소서", "Cover Letter"], confidence: low, seen_in: [recruiter.co.kr],
+      note: "공고마다 문항이 다름. master.yaml 의 essay_bank.<카테고리>(지원동기, 직무역량 등)에서 유사 문항 매칭 후 사람이 작성" }

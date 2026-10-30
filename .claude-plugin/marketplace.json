@@ -1,0 +1,12 @@
+{
+  "name": "jobflow-kit",
+  "description": "취준생용 채용 지원 도우미 플러그인 모음",
+  "owner": { "name": "sangho24" },
+  "plugins": [
+    {
+      "name": "jobflow",
+      "source": "./plugins/jobflow",
+      "description": "취준생용 채용 지원 도우미 (공고 정리, 자격 판정, 마감 알림, 경험 정리, 지원서 자동입력)"
+    }
+  ]
+}

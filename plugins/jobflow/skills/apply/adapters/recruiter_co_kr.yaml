@@ -1,0 +1,216 @@
+# verified: 2026-08 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# 스카우트 리크루터 (recruiter.co.kr) - 국내 대기업 다수 사용
+# 확인된 사례: 통신사, 카드사, 은행 등 국내 대기업 다수
+#
+# status: verified - 실제 제출 지원서 아카이브에서 폼 섹션·필드 구조를 역산하고,
+#    다른 공고에서 로그인·입력·임시저장까지 종단간 확인했다.
+id: recruiter_co_kr
+status: verified
+verified_from: "제출 지원서 아카이브 PDF 역산"
+verified_at: "2026-08"
+live_verified: "2026-08 대기업 신입 공고에서 로그인·입력·임시저장까지 종단간 확인"
+
+match:
+  - "*.recruiter.co.kr/*"
+
+auth:
+  type: account
+  scope: per_posting          # ⚠️ 그룹 통합 계정이 아니다. 공고마다 계정을 새로 만든다.
+  mfa: email                  # 실측: 이메일 인증 (SMS 아님)
+  captcha:
+    type: recaptcha_v3        # invisible, score 기반 - 사람이 클릭할 체크박스 없음
+    human_interaction: false
+    risk: "봇 점검에 걸리면 사람에게 넘긴다. 점검 회피를 시도하지 않는다."
+  note: |
+    화면 라벨은 '본인 인증' 이지만 실제 버튼은 '이메일 인증' 이다.
+    PASS/휴대폰 본인인증은 아니지만, 코드는 기본적으로 사용자에게 받는다.
+    사용자가 그 세션에서 명시적으로 요청할 때만 Gmail 커넥터로 그 코드 하나를 읽어 입력한다.
+  signup_flow:
+    - step: 동의
+      fields: [개인정보 수집/이용(필수), 민감정보 수집/이용(필수), 개인정보 제3자 제공(필수)]
+      hint: "'아래의 사항에 대해 전체 동의합니다' 체크박스를 누르면 3건이 한 번에 체크되고 버튼이 '전체 동의하기'→'지원하기' 로 바뀐다"
+      selector_warning: "'전체 동의하기' 버튼은 DOM 에 2개(모바일/데스크톱) 있고 첫 번째는 hidden. strict mode 위반이 나므로 role 로 잡을 것."
+    - step: 계정생성   # 자동 가입 금지. 사용자가 직접 만든다 (구조 참고용)
+      fields: [email, name, phone, password, passwordConfirm]
+      verify: "이메일 인증 버튼 → 코드 수신 → 입력"
+  login_existing:
+    url_shape: "/v1/applicant/modify-resume/login?jobnoticeSn={sn}"
+    fields: [email, name, password]
+
+url_shape:
+  form:        "/v1/applicant/resume-form/{posting_id}"      # 예: <회사>.recruiter.co.kr/v1/applicant/resume-form/<공고번호>
+  step_param:  "step"
+  print_popup: "/v1/applicant/resume-print-popup/{resume_id}" # ← 제출본 아카이브. 지원 후 반드시 저장할 것
+  job_list:    "/career/jobs/{job_id}"
+
+# 실제 폼 섹션 구조 (대형 카드사 공고 기준)
+sections:
+  - id: 지원정보
+    fields:
+      - { key: 지원분야, label: "지원분야(택1)", type: select, required: true, per_posting: true }
+
+  - id: 기본정보
+    fields:
+      - { key: name_ko,   label: "이름",     maps_to: personal.name_ko }
+      - { key: gender,    label: "성별",     maps_to: personal.gender }
+      - { key: name_en,   label: "영문이름", maps_to: personal.name_en }
+      - { key: birth,     label: "생년월일", maps_to: personal.birth }
+      - { key: email,     label: "이메일주소", maps_to: personal.email }
+      - { key: phone,     label: "휴대전화", maps_to: personal.phone }
+
+  - id: 병역_보훈_장애
+    fields:
+      - { key: military_status,   label: "병역",     maps_to: military.status }
+      - { key: military_rank,     label: "계급",     maps_to: military.rank }
+      - { key: discharge_type,    label: "제대구분", maps_to: military.discharge_type }
+      - { key: service_period,    label: "복무기간", maps_to: "military.start~military.end" }
+      - { key: veteran,           label: "보훈여부", maps_to: special_status.veteran, values: [대상, 비대상] }
+      - { key: disability,        label: "장애여부", maps_to: special_status.disability, values: [대상, 비대상] }
+
+  - id: 인적사항
+    fields:
+      - { key: nationality, label: "국적",   maps_to: personal.nationality }
+      - { key: address,     label: "현주소", maps_to: personal.address.full }
+
+  - id: 학업사항
+    repeatable: true
+    fields:
+      - { key: school_type,     label: "대학교/고등학교", type: select }
+      - { key: school_name,     label: "학교명",   maps_to: "education.university[0].name"}
+      - { key: admission_type,  label: "입학구분", maps_to: "education.university[0].admission_type", values: [입학, 편입] }
+      - { key: location,        label: "소재지",   maps_to: "education.university[0].location"}
+      - { key: campus,          label: "본교분교", maps_to: "education.university[0].campus", values: [본교, 분교] }
+      - { key: period,          label: "재학기간", maps_to: "education.university[0].admitted~graduated" }
+      - { key: gpa_100,         label: "학업성적", maps_to: "education.university[0].gpa_100", format: "NN.N / 100점" }
+      - { key: degree_status,   label: "학위/졸업여부", maps_to: "education.university[0].status"}
+      - { key: major,           label: "주전공",   maps_to: "education.university[0].major"}
+      - { key: major_schedule,  label: "주야",     maps_to: "education.university[0].major_schedule"}
+      - { key: major_field,     label: "계열",     maps_to: "education.university[0].major_field"}
+      - { key: linked_major,    label: "연계전공", maps_to: "education.university[0].linked_major"}
+    note: "⚠️ 학업성적을 100점 환산으로 요구한다. 4.5 만점 GPA만 갖고 있으면 입력 불가 → master.education.university[].gpa_100 필수"
+
+  - id: 경력사항
+    repeatable: true
+    fields:
+      - { key: company,    label: "회사명",   maps_to: "experience[].company"}
+      - { key: period,     label: "재직기간", maps_to: "experience[].start~end" }
+      - { key: department, label: "부서",     maps_to: "experience[].department"}
+      - { key: position,   label: "직급",     maps_to: "experience[].position"}
+      - { key: duties,     label: "담당업무", maps_to: "experience[].duties"}
+      - { key: emp_type,   label: "고용형태", maps_to: "experience[].employment_type"}
+      - { key: portfolio,  label: "포트폴리오 URL", maps_to: links.portfolio }
+
+  - id: 어학
+    repeatable: true
+    fields:
+      - { key: test,    label: "공인외국어시험", maps_to: "languages[].test" }
+      - { key: cert_no, label: "등록번호",       maps_to: "languages[].cert_no" }
+      - { key: score,   label: "점수",           maps_to: "languages[].level" }
+      - { key: date,    label: "응시일",         maps_to: "languages[].date" }
+
+  - id: 자격증_면허증
+    repeatable: true
+    fields:
+      - { key: name,     label: "자격증",   maps_to: "certificates[].name"}
+      - { key: issuer,   label: "발급기관", maps_to: "certificates[].issuer"}
+      - { key: acquired, label: "취득일자", maps_to: "certificates[].acquired"}
+  - id: 프로그래밍_언어
+    repeatable: true
+    fields:
+      - { key: lang,  label: "프로그램명",  maps_to: "programming[].name"}
+      - { key: level, label: "활용수준",    maps_to: "programming[].level", values: [초급, 중급, 고급] }
+
+  - id: 경험_수상경력
+    repeatable: true
+    fields:
+      - { key: award_name, label: "상훈명",   maps_to: "awards[].name"}
+      - { key: issuer,     label: "수여기관", maps_to: "awards[].issuer"}
+      - { key: date,       label: "수상일자", maps_to: "awards[].date"}
+      - { key: desc,       label: "설명",     maps_to: "awards[].description"}
+
+  - id: 경험_학내외활동
+    repeatable: true
+    fields:
+      - { key: act_type, label: "활동구분",     maps_to: "activities[].type"}
+      - { key: org,      label: "기관 및 조직명", maps_to: "activities[].org"}
+      - { key: period,   label: "활동기간",     maps_to: "activities[].period"}
+      - { key: role,     label: "역할",         maps_to: "activities[].role"}
+      - { key: desc,     label: "설명",         maps_to: "activities[].description"}
+
+  - id: 자기소개서
+    per_posting: true          # ← 공고마다 문항이 다름. 자동입력 대상 아님 → gap ④ 로
+    note: "문항 수와 글자수는 공고마다 다르다(예: 4문항, 800~1000자). 경험 카드에서 소재만 제시하고 문장은 사람이 쓴다."
+
+# 자동입력 가능 비율 (대형 카드사 공고 기준 실측)
+coverage:
+  auto_fillable: [기본정보, 병역_보훈_장애, 인적사항, 학업사항, 경력사항, 어학, 자격증_면허증, 프로그래밍_언어, 경험_수상경력, 경험_학내외활동]
+  human_required: [지원정보, 자기소개서]
+  estimate: "필드 기준 약 85% 자동 입력 가능. 나머지는 지원분야 선택 + 자소서."
+
+
+# ─────────────────────────────────────────────────────────────
+# 실제 폼 진입 후 확인한 것 (대기업 신입 공고)
+# ─────────────────────────────────────────────────────────────
+runtime:
+  form_url: "/v1/applicant/resume-form/{jobnoticeSn}?step={n}"
+  steps: [기본정보, 학력/경력, 어학/자격/수상, 자기소개서, 최종 점검]
+  session:
+    timeout_min: 120
+    extend_button: "연장"
+    warning: "타이머 만료 전에 임시저장할 것. beforeunload 다이얼로그가 뜨므로 이탈 시 handle_dialog 필요."
+  save:
+    draft_button: "임시저장"        # ✅ 페이지 하단. 저장 후에도 폼에 머문다.
+    save_and_exit: "저장 후 나가기"  # 상단 헤더. 저장하고 폼을 빠져나간다.
+    verified: "새로고침 후 값 유지 확인 "
+  submit_button: "최종 제출"        # 🚫 절대 누르지 않는다
+
+  photo:
+    ratio: "4:5"
+    max_size: "50MB"
+    formats: [jpg]
+    note: "⚠️ 일부 다른 ATS 는 3:4 다. ATS 별로 규격이 달라 사진을 여러 벌 준비해야 한다."
+
+  date_format:
+    birth: "YYYY.MM.DD"
+    military: "YYYY.MM"   # ✅ 일자 없이 연·월만 받는다. master 의 YYYY-MM 을 점으로 바꾸면 된다.
+
+  # 주소는 직접 입력이 안 된다. zipCode/address/detailAddress 전부 disabled.
+  address_widget:
+    trigger: "주소입력"
+    flow:
+      - "다이얼로그의 검색 textbox 에 도로명 입력 후 Enter"
+      - "⚠️ 검색 결과 li 를 반드시 클릭할 것. 클릭 없이 확인을 누르면 상세주소만 들어가고 우편번호·주소가 빈다."
+      - "상세주소 입력 → 확인"
+    selector_warning: "evaluate 로 다이얼로그 버튼을 임의 클릭하면 취소로 닫힌다. 스냅샷 ref 로 조작할 것."
+
+  known_traps:
+    - "로그인 버튼이 비밀번호 규칙 툴팁(사용불가 문자제외...)에 가려 클릭이 intercept 된다 → Enter 로 제출."
+    - "'전체 동의하기'·'지원하기' 버튼은 모바일/데스크톱 2벌이고 첫 번째가 hidden → role 또는 ref 로 잡을 것."
+    - "React 제어 컴포넌트라 프로그래밍 방식 value 주입은 상태에 반영되지 않는다(비밀번호에서 '일치하지 않습니다' 오류). browser_fill_form/type 을 쓸 것."
+
+  # 자소서는 공고마다 문항이 다르다. 이 구조로 파싱한다. (일부 공고는 성명·학교명 등 식별 정보 기재 금지 안내가 있다)
+  essay_field_shape: "selfIntroductionGroupAnswer.additionalQuestionAnswers.questionDescriptiveAnswerList.questionSn-{qsn}.contentSn-{csn}"
+
+# 학력/경력/어학/자격/수상 단계 실측 (2026-09)
+date_formats:
+  대학교_입학일_졸업일: "YYYY.MM.DD"     # YYYY.MM 은 '존재하지 않는 날짜 형식' 거부
+  경력_입사일: "YYYY.MM.DD"
+  고등학교_입학일_졸업일: "YYYY.MM"
+  자격증_취득일: "YYYY.MM"               # 일자를 넣어도 월까지만 저장
+  어학_응시일: "YYYY.MM"
+  수상일: "YYYY.MM.DD"
+  fill_hint: "fill(한 번에 채우기) 이 안전. pressSequentially 로 점(.)을 치면 마스크가 깨진다. 채운 뒤 Tab 으로 blur 해야 검증이 갱신된다"
+autocomplete:
+  학교명: "검색 목록에서 선택한다 (글자만 넣지 않는다)"
+  전공명: "목록에 없으면 \"'<입력값>' 등록하기\" 버튼으로 직접 등록"
+  공인외국어시험: "시험명 목록에서 고른다. '직접등록' 계열 항목은 별도 항목이다"
+  자격증: "목록 항목을 고른다. 없으면 사용자에게 넘긴다"
+limits:
+  어학: "공고마다 다르다. 개수와 성적 유효기간 제한을 원문에서 확인"
+  자격증: "공고마다 다르다. 개수와 직무 관련 여부 제한을 원문에서 확인"
+  수상: "공고마다 다르다. 개수 제한을 원문에서 확인"
+  경력: "공고마다 다르다. 인정 범위(정규직만 등)를 원문에서 확인"
+  담당업무: "글자수 제한이 있다 (공고마다 다름)"
+photo: "4:5 JPG 50MB 이내 · 업로드 후 자르기 대화상자([role=dialog]) 의 '저장' 클릭 필요"
+save: "각 단계 '임시저장' 버튼 → 본문 끝에 '지원서 저장이 완료되었습니다' 토스트"
+session: "세션 만료 시 /v1/applicant/modify-resume/login?jobnoticeSn={sn} 에서 email·name·password 로 재로그인 (이메일 인증 없음). 로그인 버튼은 오버레이에 가려 click 이 막힘 → 비밀번호 입력란에서 Enter"

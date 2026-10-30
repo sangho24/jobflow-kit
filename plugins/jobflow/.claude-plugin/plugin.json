@@ -1,0 +1,21 @@
+{
+  "name": "jobflow",
+  "version": "0.1.0",
+  "description": "취준생용 채용 지원 도우미: 공고 정리, 자격 판정, 마감 알림, 경험 정리, 지원서 자동입력",
+  "author": { "name": "sangho24" },
+  "userConfig": {
+    "workspace_dir": {
+      "type": "directory",
+      "title": "작업 폴더",
+      "description": "프로필, 경험 카드, 지원서 입력 기록 등 개인 데이터가 쌓이는 폴더입니다. 이 컴퓨터 안에만 저장됩니다. macOS 에서는 Desktop, Documents, Downloads 아래를 피하세요.",
+      "default": "~/jobflow-data",
+      "required": true
+    },
+    "notify_email": {
+      "type": "string",
+      "title": "마감 알림 받을 메일 주소",
+      "description": "마감 임박 공고를 Gmail 로 받을 주소입니다. 비워 두면 Claude Code 세션 안에서만 알려 줍니다.",
+      "required": false
+    }
+  }
+}

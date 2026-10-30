@@ -1,0 +1,28 @@
+# verified: 2026-09 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# Greenhouse - 테크/스타트업 표준 ATS
+# 확인된 사례: 커머스·플랫폼 기업의 자체 채용 도메인(gh_jid 파라미터 사용). 일부 회사는 gh_jid 를 쓰지만 자체 폼이라 examples/toss.yaml 처럼 별도 대응이 필요하다
+id: greenhouse
+match:
+  - "*/?*gh_jid=*"
+  - "boards.greenhouse.io/*"
+  - "job-boards.greenhouse.io/*"
+auth:
+  type: none               # 계정 없이 지원 가능 - 자동화 난이도 가장 낮음
+  note: "로그인 불필요. 자동화 난이도가 가장 낮다."
+steps:
+  - 단일 페이지 폼
+field_hints:
+  # Greenhouse 는 필드 id 규약이 일관적이라 매핑이 안정적이다
+  first_name: { selector: "#first_name" }
+  last_name:  { selector: "#last_name" }
+  email:      { selector: "#email" }
+  phone:      { selector: "#phone" }
+  resume:     { selector: "input[type=file]" }
+custom_questions: true      # 회사별 추가 문항 → gap ④ 로
+draft_save: false           # 🚨 임시저장 없음 - 단일 폼 + 제출 버튼. 전략은 SKILL.md 0단계를 따른다 (기본은 기입안만 노션에 보고, 사용자가 원하면 채워 두고 사용자가 직접 제출)
+survey_api:                 # 폼 구조는 공개 Job Board API 로 읽는다 - 브라우저·봇 확인 불필요
+  url: "https://boards-api.greenhouse.io/v1/boards/<board>/jobs/<job_id>?questions=true"
+  boards: {}                 # 회사별 board 이름은 사용 시 채운다
+  note: "questions[].label / required / fields[].type(input_text|input_file|textarea|multi_value_single_select) / values[].label. 2026-09 실측 26필드"
+bot_check: "일부 회사 도메인은 헤드리스 브라우저에 Cloudflare Turnstile 을 띄운다(2026-09). 우회 금지 - 실제 입력은 사람이 일반 브라우저에서."
+status: surveyed            # 2026-09 폼 구조 확인. 입력은 미검증(임시저장 없음)

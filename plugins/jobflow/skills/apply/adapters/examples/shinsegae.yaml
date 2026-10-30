@@ -1,0 +1,56 @@
+# verified: 2026-10 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# 회사 전용 예시: 다른 회사 지원서를 만들 때 어댑터를 어떻게 쓰는지 보여 주는 참고용이다
+# job.shinsegae.com (신세계그룹 자체구축, Nuxt/Vue) 어댑터
+# 관측: 유통 대기업 계열사 신입 공고 - 2026-10
+ats: shinsegae
+status: verified
+domains:
+  - job.shinsegae.com
+seen_in:
+  - 유통 대기업 그룹 계열사 다수
+
+policy:
+  duplicate_apply: false   # 관계사 간 중복지원 불가. 여러 계열사 중 1곳만
+
+login:
+  note: 아이디(이메일)+비밀번호 또는 네이버·카카오. 본인인증 없음
+  session_storage: true    # 🚨 토큰(srecu-fo-atoken/rtoken)이 탭 sessionStorage 에 있다.
+                           # 다른 탭에서 로그인해도 넘어오지 않는다. 확장 모드 연결이 리셋돼
+                           # 새 탭이 생기면 다시 로그인해야 한다.
+  reload_risk: 마감일 트래픽으로 느릴 때 goto/reload 하면 토큰 갱신이 실패해 로그아웃됐다.
+               로그인 뒤에는 화면 안 메뉴(나의 지원현황 → 지원서 수정)만 클릭해서 이동한다
+
+flow:
+  - 공고 상세 '지원하기' → /mypage/terms/<id> 필수약관 3개(모두 동의) → '다음'
+  - /mypage/appnt/renew/<id> 한 페이지 3단계: 기본정보 → 이력정보 → 자기소개서 ('다음'/'이전')
+  - 재진입: 나의 지원현황 → '지원서 수정'
+
+save:
+  draft: true
+  draft_button_text: 임시저장       # 성공 시 모달 "작성중인 지원서를 임시 저장했습니다." (늦게 뜰 수 있어 폴링)
+  submit_button_text: 지원하기      # 🚫 누르지 않는다
+  id_shift: true                    # 입력 id(ssg-N)가 재진입마다 바뀐다. id 하드코딩 금지, group 라벨로 찾는다
+
+widgets:
+  select: 커스텀 드롭다운. button(현재값 or '선택') 클릭 → role=listbox 의 role=option 클릭
+  multi_step_select: 어학 시험종류는 한 버튼 안 2단(언어 → 시험) listbox
+  month_picker: .ui-month-picker (.year-label, .nav-btn 0=이전 1=다음, .month-btn 'N월'). 입력칸은 readonly, 달력 클릭으로만
+  date_picker: Vuetify v-date-picker. 버튼 0=헤더('YYYY년 M월'), 2=이전달, 3=다음달, 'D일' 버튼
+  search_popup: 학교·전공·자격증·국적은 검색 팝업에서 결과 텍스트 클릭. 고르면 잠긴 하위 칸이 열린다(코드값 확보 신호)
+  textarea: maxlength 400, 공백·줄바꿈 각 1자(JS length)
+
+field_hints:
+  지원정보.희망직군: select (공고별 직군 목록)
+  인적사항.주소: 우편번호 검색 팝업 (🙋 사람)
+  보훈여부: radio
+  장애여부: select '해당없음' 고르면 등급·판정시기·발행관청 잠김
+  병역: 병역구분(군필) → 제대구분·계급·군별·병과 select, 복무기간 month_picker
+  고등학교: 학교 검색 → 주간/야간 · 재학기간(month) · 졸업구분 · 지역 select
+  대학교: 학교 검색 → 본/분교 · 전공 검색 · 복수전공 검색 · 입학/편입 · 재학기간 · 졸업구분 · 평점(number) + 만점 select(4.0/4.3/4.5/100) · 지역
+  직장경력: 회사명 입력해야 나머지 열림. 고용형태 select, 재직기간 month, 재직중 checkbox(체크 시 퇴직사유 잠김), 연봉(만원)
+  어학: 언어→시험 2단 select, 점수/급 select, 주관처 텍스트, 취득일 date_picker
+  자격: 자격증 검색(목록에 없으면 못 넣음), 발급기관·등록번호 텍스트, 취득일 date_picker
+  해외/연수경험: 구분(어학연수/해외거주/기타), 국가 검색('국적 검색'), 기간 month, 내용 max100
+  수상경력: 구분(공모전 유형/기타), 수상내역, 단체명, 수상일자 date_picker
+  학내외활동: 구분(동아리 등), 기관명, 기간 month, 내용 max100
+  자기소개서: 문항 수와 글자수는 공고별(예 3문항 각 400자). 문장은 사람이 쓴다

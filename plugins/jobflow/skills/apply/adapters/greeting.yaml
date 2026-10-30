@@ -1,0 +1,38 @@
+# verified: 2026-09 기준 1인 실측, 사이트 개편 시 달라질 수 있음
+# Greeting (greetinghr.com) - 두들린 ATS. 확인된 사례: 여러 기업의 <회사>.career.greetinghr.com
+id: greeting
+match:
+  - "*.career.greetinghr.com/*/o/*"
+auth:
+  type: account              # 실측 2026-09: /ko/a/login 에 이메일 주소 + 비밀번호 + '계정 만들기'. 이메일 인증코드만으로는 안 됨 (가입 시 인증코드 사용 추정)
+  scope: unknown             # 🔴 Greeting 계정이 회사(워크스페이스)별인지 두들린 공통인지 미확인
+  signup: "'계정 만들기' → 자동 가입 금지, 사용자가 만든다. 서비스명은 <prefix>-greeting (공통이면) 또는 <prefix>-greeting-<회사>"
+  note: "/o/<id>/apply/new 는 로그인으로 리다이렉트(returnTo 파라미터). 비로그인 curl 로는 폼 필드를 못 읽는다"
+survey_public:               # 로그인 없이 읽을 수 있는 것 - 공고 페이지 __NEXT_DATA__ (dehydratedState.queries[getOpeningById])
+  fields: [openingsInfo.detail(JD 전문 HTML), dueDate, jobPositionSetting.maxPriority(선택 가능 직무 수), "jobPositions[].jobPositionCareer.careerType(NOT_MATTER|EXPERIENCED, careerFrom 연차)", openingSettingInfo.canEditSubmittedApplication, terms]
+  note: "2026-09 실측"
+draft_save: yes              # 실측 2026-09: [임시저장] 버튼 있음(90일 보관). 변경분이 있을 때만 활성화되고 저장 완료되면 다시 disabled 로 돌아간다 - 이걸 저장 성공 신호로 쓸 수 있다. canEditSubmittedApplication=true 면 제출 후 마감까지 수정 가능
+steps:
+  - 이메일 인증 → 기본정보 → 직무 선택(maxPriority 만큼) → 회사별 지원서 양식(applyConfigSnapshotKey) → 약관 4종(필수 2·선택 2)
+field_hints:                 # ✅ 2026-09 실측 (Playwright)
+  form_engine: "React. native <select> 가 0개다. 전부 role=combobox 커스텀 위젯이며 옵션은 [role=option] 클릭으로만 잡힌다"
+  field_naming: "input/combobox 에 dot-path name 이 그대로 붙어 있다 (예 educationalBackground.universities.0.gpa.score). 셀렉터는 [name=\"...\"] 가 가장 안정적"
+  radio: "role=radio 도 커스텀 위젯이다. input[type=radio] 로는 잡히지 않는다"
+  datepicker: |
+    캘린더 팝업 상단에 직접 입력 텍스트칸이 있다. 타이핑 후 Enter 면 확정된다.
+    월 단위 필드는 placeholder 가 '2026. 09' (학력 재학기간, 활동기간, 해외경험)
+    일 단위 필드는 placeholder 가 '2026. 09. 18' (병역 복무기간, 경력 근무기간, 자격 취득일, 수상일자)
+    기간(범위) 필드는 시작/종료 두 칸이 한 팝업에 함께 뜬다
+  search_combobox: "타이핑 → [role=option] 목록 렌더 → 클릭. 학교명·회사명·전공·자격증명·국가 모두 이 방식. 자격증명은 '직접 입력하기' 옵션도 제공한다"
+  file_upload: |
+    Playwright allowed-root 제한 때문에 저장소 바깥 파일은 못 올린다. 작업 폴더 안(runs/)으로 복사한 뒤 올릴 것.
+    사진은 업로드 후 '사진 자르기' 모달이 뜬다. [업로드] 버튼을 눌러야 실제로 붙는다.
+    ⚠️ Escape 키를 콤보박스에 쓰면 file chooser 가 대량으로 열려 폼이 잠긴다. 탭을 새로 열어 복구할 것
+  address: "우편번호·주소는 readonly + [주소 찾기] 모달(iframe 아님). 상세주소만 자유 입력"
+  salary: "희망연봉은 '회사 내규에 따름' 체크 시 input 이 disabled 된다. 금액을 넣으려면 체크를 먼저 해제"
+  work_current: "'재직 중' 체크 시 퇴사일·퇴직사유 필드가 DOM 에서 사라진다(필수 해제)"
+  gpa_scale: "만점기준 옵션 3.0/3.5/4.0/4.3/4.5/5.0/7.0/20/100"
+  major_repeat: "[전공 추가] 로 majors.1 생성 → 복수전공 기재 가능"
+seen_in: [Greeting 사용 기업 다수]
+custom_questions: true
+status: verified             # 2026-09 전 구간 입력 실측 (학력·경력·어학·자격·수상·활동·파일·지원정보·자소서)

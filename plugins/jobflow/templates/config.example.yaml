@@ -1,0 +1,39 @@
+# jobflow 작업 폴더 설정 (config.yaml 양식)
+# /jobflow:setup 이 이 파일을 작업 폴더에 복사하고 값을 채운다.
+# 이 파일에는 노션 ID 가 들어가므로 작업 폴더 밖으로 내보내지 않는다.
+version: 1
+
+notion:
+  root_page_id: ""        # 📡 취업 준비 트래커 페이지 ID
+  jobs_ds: ""             # 채용 일정 데이터 소스 (collection://...)
+  scrap_ds: ""            # 취업 스크랩 데이터 소스
+
+# intake 6축 자격 판정에 쓰는 내 값
+eligibility:
+  career: ""              # 신입 / 경력 N년
+  degree: ""              # 학사 / 석사 등
+  graduation: { status: "", date: "YYYY-MM" }   # status: 졸업 / 졸업예정 / 재학
+  majors: []              # 전공 목록 (복수전공·부전공 포함)
+  languages: []           # [{test: "", score: "", date: "YYYY-MM"}]
+  overseas_ok: true       # 해외 근무지 공고도 볼지
+  needs_visa_sponsorship: false   # 해외 취업에 비자 후원이 필요한지
+
+filters:
+  salary_floor: null      # 만원 단위 연봉 기준선. null 이면 급여 필터 끄기
+
+targets:
+  tier1_roles: []         # 1순위 직무 키워드
+  tier2_roles: []         # 2순위 직무 키워드
+  exclude: []             # 제외할 회사 유형·직무
+  max_years_required: 2   # 원문 연차 요건이 이보다 크면 지원 대상 아님(추적만)
+  priority_map: { tier1: "높음", tier2: "중간", other: "낮음" }
+
+remind:
+  stages: [7, 3, 1, 0]    # 마감 D-7, D-3, D-1, 당일에 알림
+
+intake:
+  default_target_days: 14 # 마감일 미확인 공고의 잠정 목표일(오늘부터 N일)
+
+credentials:
+  backend: "keychain"     # keychain(macOS) / ask(매번 묻기)
+  prefix: "jobflow"       # 키체인 항목 이름 접두어

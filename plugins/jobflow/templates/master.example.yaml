@@ -1,0 +1,156 @@
+# ─────────────────────────────────────────────────────────────
+# 마스터 프로필 양식
+#
+# 실제 값은 작업 폴더의 profile/master.yaml 에 작성한다.
+# /jobflow:setup 이 이 파일을 복사해 만든다.
+# 개인정보가 들어가므로 이 컴퓨터 밖으로 내보내지 않는다.
+#
+# 국내 지원서가 요구하는 필드의 합집합이다. 처음 보는 필드를
+# 만나면 여기에 추가한다. 모르거나 해당 없는 값은 비워 둔다.
+# 지원서 자동입력을 쓰기 전까지만 채우면 된다.
+# ─────────────────────────────────────────────────────────────
+
+meta:
+  updated: "YYYY-MM-DD"
+  # 민감도 등급: 노션에 기록할 때 마스킹하는 필드
+  sensitive: [personal.rrn, personal.address, personal.phone, personal.phone_intl, personal.emergency_phone]
+
+personal:
+  name_ko: "<이름>"
+  name_en: "<영문 이름>"          # 여권 표기 기준
+  name_hanja: ""
+  birth: "YYYY-MM-DD"
+  gender: ""
+  rrn: ""                         # 주민등록번호: 필요한 사이트에서만. 어디에도 커밋·업로드 금지
+  email: "<example@email.com>"
+  phone: "<010-0000-0000>"
+  phone_intl: ""                  # 국제전화 형식 (예: +82-10-0000-0000)
+  emergency_phone: ""
+  address:
+    zipcode: ""
+    base: ""
+    detail: ""
+    full: ""                       # 한 줄 전체 주소 (우편번호 제외, 지원서가 한 칸만 요구할 때)
+    en: ""                         # 영문 주소 (영문 지원서용)
+  nationality: ""
+
+military:                          # 병역
+  status: ""                       # 군필 / 미필 / 면제 / 대상아님
+  branch: ""
+  rank: ""
+  start: "YYYY-MM-DD"
+  end: "YYYY-MM-DD"
+  discharge_type: ""               # 전역 구분 (만기전역 / 의가사전역 등)
+  exemption_reason: ""
+
+special_status:                    # 우대사항
+  veteran: false                   # 보훈대상
+  disability: false
+  employment_protection: false
+
+education:
+  high_school:
+    name: ""
+    location: ""
+    track: ""                      # 인문계 / 자연계 등
+    graduated: "YYYY-MM"
+  university:
+    - name: ""
+      degree: ""                   # 학사 등
+      major: ""
+      double_major: ""
+      minor: ""
+      location: ""
+      admitted: "YYYY-MM"
+      graduated: "YYYY-MM"
+      status: ""                   # 졸업 / 졸업예정 / 재학 / 수료
+      gpa: ""
+      gpa_scale: ""                # 만점 기준 (예: 4.5 또는 4.3). 지원서가 요구하는 만점에 맞춰 환산
+      day_night: ""                # 주간 / 야간
+      admission_type: ""           # 입학 구분 (신입학 / 편입학 등)
+      campus: ""                   # 캠퍼스 (본교 / 분교 / 캠퍼스명)
+      gpa_100: ""                  # 100점 만점 환산 학점
+      linked_major: ""             # 연계전공
+      major_field: ""              # 전공 계열 (공학 / 자연과학 / 인문 등 지원서 분류)
+      major_schedule: ""           # 전공 이수 구분 (주전공 / 복수전공 / 부전공 등)
+  graduate_school: []              # university 와 동일 구조
+
+languages:                         # 어학 시험 목록 (시험마다 한 항목)
+  - test: ""                       # TOEIC / TOEIC Speaking / OPIc / TEPS / 기타
+    level: ""                      # 등급형 시험의 등급 (예: OPIc 등급)
+    score: ""                      # 점수형 시험의 점수
+    date: "YYYY-MM-DD"
+    cert_no: ""
+
+programming:                       # 프로그래밍 언어·도구 숙련도
+  - name: ""
+    level: ""                      # 상 / 중 / 하 등 지원서가 요구하는 표기
+
+certificates:
+  - name: ""
+    grade: ""
+    issuer: ""
+    acquired: "YYYY-MM-DD"
+    cert_no: ""
+
+experience:                        # 경력 / 인턴
+  - company: ""
+    department: ""
+    position: ""
+    employment_type: ""            # 정규직 / 인턴 / 계약직
+    start: "YYYY-MM"
+    end: "YYYY-MM"
+    current: false
+    duties: ""
+    leaving_reason: ""
+
+projects:
+  - name: ""
+    period: ""
+    role: ""
+    stack: []
+    summary: ""
+    result: ""                     # 정량 성과: 자소서·면접 재료
+    link: ""
+
+awards:
+  - name: ""
+    issuer: ""
+    date: "YYYY-MM-DD"
+    description: ""
+
+activities:                        # 대외활동 / 교육 / 동아리
+  - type: ""                       # 유형 (대외활동 / 교육 / 동아리 / 봉사 등)
+    name: ""
+    org: ""
+    period: ""
+    role: ""
+    description: ""
+
+links:
+  github: ""
+  linkedin: ""
+  notion: ""
+  portfolio: ""
+
+documents:                         # 첨부파일 경로 (작업 폴더 밖이어도 되는 이 컴퓨터의 절대경로)
+  resume_ko: ""
+  resume_en: ""
+  portfolio: ""
+
+preferences:
+  desired_location: []             # 예: [서울, 판교]
+  desired_field: ""                # 희망 직무·분야
+  desired_salary: ""               # "회사 내규에 따름" 등
+  available_from: "YYYY-MM-DD"
+  relocation_ok: true
+  overseas_ok: true
+
+essay_bank:                        # 자소서 재사용 자산: 새 공고에서 유사 문항이 나오면 여기서 출발
+  # 항목 형식: { company, text, result }  result: 서류합격 / 서류탈락
+  지원동기: []
+  성장과정: []
+  직무역량: []
+  협업경험: []
+  도전실패경험: []
+  입사후포부: []
