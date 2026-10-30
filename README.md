@@ -99,3 +99,7 @@ macOS 에서 Desktop, Documents, Downloads 아래에 두면 권한 문제가 납
 
 **업데이트했는데 그대로입니다.**
 `claude plugin marketplace update jobflow-kit` 를 먼저 실행해야 새 버전 정보를 받습니다. 그다음 `claude plugin update jobflow@jobflow-kit` 와 `/reload-plugins` 를 실행합니다.
+
+## 라이선스
+
+MIT. 자유롭게 쓰고 고쳐 쓸 수 있습니다. 자세한 내용은 `LICENSE` 를 봅니다.

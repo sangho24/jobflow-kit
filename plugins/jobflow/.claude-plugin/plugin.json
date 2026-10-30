@@ -2,7 +2,9 @@
   "name": "jobflow",
   "version": "0.1.0",
   "description": "취준생용 채용 지원 도우미: 공고 정리, 자격 판정, 마감 알림, 경험 정리, 지원서 자동입력",
-  "author": { "name": "sangho24" },
+  "author": {
+    "name": "sangho24"
+  },
   "userConfig": {
     "workspace_dir": {
       "type": "directory",
@@ -17,5 +19,6 @@
       "description": "마감 임박 공고를 Gmail 로 받을 주소입니다. 비워 두면 Claude Code 세션 안에서만 알려 줍니다.",
       "required": false
     }
-  }
+  },
+  "license": "MIT"
 }
